@@ -1,0 +1,40 @@
+#!/bin/sh
+# addshelladmin - add admin user to shell server 
+# Copyright haxwithaxe 2014 GPLv3
+# see LICENSE file 
+
+# assumes there is a fileserver serving the home directory. if not then
+# disregard the ssh command. do not run as root. use sudo so that your admin
+# user can ssh to the fileserver.
+
+# fail hard if everything isn't right
+set -ex
+
+# name of user to be added
+username=$1
+
+# ssh pubkey of admin user
+pubkey=$2
+
+# hostname of fileserver
+fileserver=$3
+
+# get the next available uid
+uid=`awk -F: '{uid[$3]=1}END{for(x=1000; x<=20000; x++) {if(uid[x] \
+!= ""){}else{print x; exit;}}}' /etc/passwd`
+
+# admin user running this command
+admin=${SUDO_USER}
+
+#check for args
+#FIXME
+
+# adduser to fileserver. it's piped to sh because when it's run in the same
+# shell as the subsequent adduser command the adduser command fails as if the
+# remote user doesn't exist (even though it does).
+echo "ssh -i $pubkey ${admin}@${fileserver} sudo useradd -r -s /bin/false -M \
+-N -u $uid $username" | sh -
+
+# add user to shell server. uses defaults set in /etc/adduser.conf
+adduser --gecos "" --disabled-password --ingroup admin $username
+
