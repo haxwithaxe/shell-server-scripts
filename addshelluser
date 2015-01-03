@@ -8,7 +8,7 @@
 # user can ssh to the fileserver.
 
 # fail hard if everything isn't right
-set -ex
+set -e
 
 # name of user to be added
 username=$1
